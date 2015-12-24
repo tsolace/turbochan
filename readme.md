@@ -5,7 +5,7 @@
 
 ## Dependencies
 
-Install these with LuaRocks, stupid!
+Install these with LuaRocks-5.1, stupid!
 
  - turbo
  - lua-requests

@@ -21,5 +21,14 @@
 				<button type="submit">Post</button>
 			</div>
 		</form>
+		{{ #posts }}
+		<div class="pbox" id="{{pid}}">
+		<span class="subject">{{subject}}</span> - <span class="author">{{author}}</span> - <span class="pid">&gt;&gt;{{pid}}</span>
+		<div class="body">{{body}}</div>
+		</div><hr>
+		{{ /posts }}
+		{{ ^posts }}
+		<p>No posts to display!</p>
+		{{ /posts }}
 	</body>
 </html>

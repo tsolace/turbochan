@@ -7,3 +7,4 @@ couch:
   pass: asdf
   dbug: console
   dlvl: WARN
+httpport: 8888

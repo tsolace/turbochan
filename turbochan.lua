@@ -13,6 +13,10 @@ local StacheHelper = turbo.web.Mustache.TemplateHelper("./templates/")
 local HomeHandler = class("HomeHandler", turbo.web.RequestHandler)
 function HomeHandler:get()
 	local resp = couch.get("_design/get/_view/by_ts", {include_docs = true, descending = true, limit = 10})
+	if resp.status_code ~= 200 then
+		self:write("<p>Error! Couldn't access CouchDB with code "..resp.status_code.."</p>")
+		return
+	end
 	local presp = resp.json()
 	local posts = {}
 	for rowcount = 1, #presp.rows do table.insert(posts, presp.rows[rowcount].doc) end
@@ -21,13 +25,21 @@ end
 
 local BoardpageHandler = class("BoardpageHandler", turbo.web.RequestHandler)
 function BoardpageHandler:get(board)
-	self:write(StacheHelper:render("board.mustache", {["board"] = board}))
+	local resp = couch.get("_design/get/_view/by_board", {include_docs = true, descending = true, key = "\""..board.."\""})
+	if resp.status_code ~= 200 then
+		self:write("<p>Error! Couldn't access CouchDB with code "..resp.status_code.."</p>")
+		return
+	end
+	local presp = resp.json()
+	local posts = {}
+	for rowcount = 1, #presp.rows do table.insert(posts, presp.rows[rowcount].doc) end
+	self:write(StacheHelper:render("board.mustache", {board = board, posts = posts}))
 end
 
 local PostHandler = class("PostHandler", turbo.web.RequestHandler)
 function PostHandler:post(pboard)
 	local psubject = self:get_argument("subject", "No subject")
-	local pbody    = self:get_argument("body", "No body")
+	local pbody    = self:get_argument("body")
 	local pauthor  = self:get_argument("author", "Anonymous")
 	local resp = couch.get("_design/get/_view/by_board", {limit = 1, descending = true, key = "\""..pboard.."\""})
 	if resp.status_code ~= 200 then
@@ -56,6 +68,6 @@ turbo.web.Application({
 	{"^/debug$", DebugHandler}, 
 	{"^/post/([^/]-)$", PostHandler},
 	{"^/([^/]-)/?$", BoardpageHandler}
-}):listen(8888)
+}):listen(Config.httpport)
 
 turbo.ioloop.instance():start()

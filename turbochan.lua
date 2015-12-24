@@ -35,7 +35,7 @@ local StacheHelper = turbo.web.Mustache.TemplateHelper("./templates/")
 
 local HomeHandler = class("HomeHandler", turbo.web.RequestHandler)
 function HomeHandler:get()
-	local resp = couchreq("_design/get/_view/by_post", {include_docs = true, descending = true, limit = 4})
+	local resp = couchreq("_design/get/_view/by_ts", {include_docs = true, descending = true, limit = 10})
 	local presp = resp.json()
 	local posts = {}
 	for rowcount = 1, #presp.rows do table.insert(posts, presp.rows[rowcount].doc) end
@@ -52,13 +52,14 @@ function PostHandler:post(pboard)
 	local psubject = self:get_argument("subject", "No subject")
 	local pbody    = self:get_argument("body", "No body")
 	local pauthor  = self:get_argument("author", "Anonymous")
-	local resp = couchreq("_design/get/_view/by_post", {limit = 1, descending = true})
+	local resp = couchreq("_design/get/_view/by_board", {limit = 1, descending = true, key = "\""..pboard.."\""})
 	if resp.status_code ~= 200 then
 		self:write("<p>Error! Couldn't access CouchDB with code "..resp.status_code.."</p>")
 		return
 	end
 	psid = resp.json()
-	local ptable = {subject = psubject, author = pauthor, body = pbody, board = pboard, pid = psid.rows[1].key + 1, ts = socket.gettime() }
+	if #psid.rows == 0 then fpid = 1 else fpid = psid.rows[1].value + 1 end
+	local ptable = {subject = psubject, author = pauthor, body = pbody, board = pboard, pid = fpid, ts = socket.gettime() }
 	local resp = couchput(couchuuid(), turbo.escape.json_encode(ptable))
 	if resp.status_code ~= 201 then
 		self:write("<p>Error! Couldn't write to CouchDB with code "..resp.status_code.."</p>")

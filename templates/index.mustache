@@ -4,9 +4,9 @@
 		<p>Time: {{time}}</p>
 		<h2>Latest posts</h2>
 		{{ #posts }}
-		<div id="pbox">
-		<span id="subject">{{subject}}</span> - <span id="author">{{author}}</span> - <span id="pid">&gt;&gt;/{{board}}/{{pid}}</span>
-		<div id="body">{{body}}</div>
+		<div class="pbox" id="{{pid}}">
+		<span class="subject">{{subject}}</span> - <span class="author">{{author}}</span> - <span class="pid">&gt;&gt;/{{board}}/{{pid}}</span>
+		<div class="body">{{body}}</div>
 		</div><hr>
 		{{ /posts }}
 		{{ ^posts }}

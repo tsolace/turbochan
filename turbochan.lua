@@ -2,40 +2,17 @@ _G.TURBO_SSL = true
 local turbo = require "turbo"
 local yaml = require "yaml"
 local socket = require "socket"
-local requests = require "requests"
+local couch = require "helpers/couchdbreq"
 
 local f = assert(io.open(arg[1], "r"))
 Config = yaml.load(f:read("*all"))
-
-local function couchreq(reqpath, reqparams)
-	if Config.couch.auth == true then
-		local auth = requests.HTTPBasicAuth(Config.couch.user, Config.couch.pass)
-		return requests.get("http://"..Config.couch.host..":"..Config.couch.port.."/"..Config.couch.base.."/"..reqpath, {auth = auth, params = reqparams})
-	else
-		return requests.get("http://"..Config.couch.host..":"..Config.couch.port.."/"..Config.couch.base.."/"..reqpath, {params = reqparams})
-	end
-end
-
-local function couchput(reqpath, reqdata)
-	if Config.couch.auth == true then
-		local auth = requests.HTTPBasicAuth(Config.couch.user, Config.couch.pass)
-		return requests.put("http://"..Config.couch.host..":"..Config.couch.port.."/"..Config.couch.base.."/"..reqpath, {auth = auth, data = reqdata})
-	else
-		return requests.put("http://"..Config.couch.host..":"..Config.couch.port.."/"..Config.couch.base.."/"..reqpath, {data = reqdata})
-	end
-end
-
-local function couchuuid()
-	local resp = requests.get("http://"..Config.couch.host..":"..Config.couch.port.."/_uuids")
-	local uuids = resp.json()
-	return uuids.uuids[1]
-end
+couch.conf(Config)
 
 local StacheHelper = turbo.web.Mustache.TemplateHelper("./templates/")
 
 local HomeHandler = class("HomeHandler", turbo.web.RequestHandler)
 function HomeHandler:get()
-	local resp = couchreq("_design/get/_view/by_ts", {include_docs = true, descending = true, limit = 10})
+	local resp = couch.get("_design/get/_view/by_ts", {include_docs = true, descending = true, limit = 10})
 	local presp = resp.json()
 	local posts = {}
 	for rowcount = 1, #presp.rows do table.insert(posts, presp.rows[rowcount].doc) end
@@ -52,7 +29,7 @@ function PostHandler:post(pboard)
 	local psubject = self:get_argument("subject", "No subject")
 	local pbody    = self:get_argument("body", "No body")
 	local pauthor  = self:get_argument("author", "Anonymous")
-	local resp = couchreq("_design/get/_view/by_board", {limit = 1, descending = true, key = "\""..pboard.."\""})
+	local resp = couch.get("_design/get/_view/by_board", {limit = 1, descending = true, key = "\""..pboard.."\""})
 	if resp.status_code ~= 200 then
 		self:write("<p>Error! Couldn't access CouchDB with code "..resp.status_code.."</p>")
 		return
@@ -60,7 +37,7 @@ function PostHandler:post(pboard)
 	psid = resp.json()
 	if #psid.rows == 0 then fpid = 1 else fpid = psid.rows[1].value + 1 end
 	local ptable = {subject = psubject, author = pauthor, body = pbody, board = pboard, pid = fpid, ts = socket.gettime() }
-	local resp = couchput(couchuuid(), turbo.escape.json_encode(ptable))
+	local resp = couch.put(couch.uuid(), turbo.escape.json_encode(ptable))
 	if resp.status_code ~= 201 then
 		self:write("<p>Error! Couldn't write to CouchDB with code "..resp.status_code.."</p>")
 		return

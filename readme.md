@@ -1,6 +1,12 @@
 # Turbochan
 
-### Dependencies
+## Usage
+`luajit turbochan.lua ./config.yaml`
+
+## Dependencies
+
+Install these with LuaRocks, stupid!
+
  - turbo
- - luchia
- - lyaml
+ - lua-requests
+ - yaml

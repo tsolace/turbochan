@@ -1,5 +1,16 @@
 <html>
 	<body>
 		<h1>{{header}}</h1>
+		<p>Time: {{time}}</p>
+		<h2>Latest posts</h2>
+		{{ #posts }}
+		<div id="pbox">
+		<span id="subject">{{subject}}</span> - <span id="author">{{author}}</span> - <span id="pid">&gt;&gt;/{{board}}/{{pid}}</span>
+		<div id="body">{{body}}</div>
+		</div><hr>
+		{{ /posts }}
+		{{ ^posts }}
+		<p>No posts to display!</p>
+		{{ /posts }}
 	</body>
 </html>

@@ -1,0 +1,25 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/static/board.css">
+	</head>
+	<body>
+		<h1>/{{board}}/ - Tagline goes here</h1>
+		<form action="/post/{{board}}" method="post">
+			<div>
+				<label for="subject">Subject:</label>
+				<input type="text" id="subject" name="subject" />
+			</div>
+			<div>
+				<label for="author">Name:</label>
+				<input type="text" id="author" name="author" />
+			</div>
+			<div>
+				<label for="body">Body:</label>
+				<textarea id="body" name="body"></textarea>
+			</div>
+			<div class="button">
+				<button type="submit">Post</button>
+			</div>
+		</form>
+	</body>
+</html>

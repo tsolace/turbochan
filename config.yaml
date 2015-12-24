@@ -1,0 +1,9 @@
+couch:
+  base: metacities
+  host: localhost
+  port: 5984
+  auth: false
+  user: asdf
+  pass: asdf
+  dbug: console
+  dlvl: WARN
